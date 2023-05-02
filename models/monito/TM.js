@@ -4,7 +4,7 @@ const cheerio = require('cheerio');
 const getBrowserInstance = require('../../puppeteer/index')
 const {storeStats} = require('../../influxDb/db')
 
-const monitoJdSchema = new Schema({
+const monitoTmSchema = new Schema({
     id: Number,
     title: String,
     href: String,
@@ -15,42 +15,45 @@ const monitoJdSchema = new Schema({
     time: Array,
     from: Array
 })
-monitoJdSchema.statics.addgoods = async function(url, id, email) {
+monitoTmSchema.statics.addgoods = async function(url, id, email) {
     // declare variables with const or let
     let page;
     try {
       const Browser = await getBrowserInstance();
       page = await Browser.newPage();
       await page.goto(url);
-      await page.waitForFunction('document.querySelector(".summary-price .price").textContent != ""');
+      await page.waitForSelector("#detail .tm-price-panel.tm-price-cur .tm-price");
+      await page.waitForFunction('document.querySelector("#detail .tm-price-panel.tm-price-cur .tm-price").textContent != ""');
       const html = await page.content();
       page?.close?.();
       const $ = cheerio.load(html);
       // 获取第一个匹配的价格元素，并使用text()方法获取其内容
-      const price = $('.itemInfo-wrap .summary-price-wrap .summary-price.J-summary-price .dd .p-price .price').first().text();
+      const price = $('#detail .tm-price-panel.tm-price-cur .tm-price').first().text();
       // 获取第一个匹配的标签元素，并使用text()方法获取其内容
-      const label = $('.summary-price.J-summary-price .dt').first().text();
+      const label = $('#detail .tm-fcs-panel .tm-price-panel dt.tb-metatit').first().text();
       // 获取第一个匹配的图片元素，并使用attr()方法获取其src属性
-      const img = $('.product-intro .preview-wrap #preview #spec-n1 #spec-img').first().attr('src');
+      const img = $('.tb-gallery .tb-booth a img').first().attr('src');
       // 获取第一个匹配的标题元素，并使用text()方法获取其内容
-      const title = $('.product-intro.clearfix .itemInfo-wrap .sku-name').first().text().trim();
+      const title = $('.tb-detail-hd h1').first().text().trim();
       const startTime = Date.now();
       const from = email;
-      const href = url;
+      const href = url;  
       const time = [];
       const data = { price, label, img, title, href, startTime, time, from, id };
-      await monito_JD.insertMany([data]);
+      await monito_TM.insertMany([data]);
       setInfluxDb(id);
     } catch (err) {
       console.log('添加失败', err);
       throw(err);
+    } finally {
+      
     }
 }
-monitoJdSchema.statics.updatagoods = async function() {
+monitoTmSchema.statics.updatagoods = async function() {
     let page;
     try {
         // 获取数据库中的数据
-        const data = await monito_JD.find({});
+        const data = await monito_TM.find({});
         const time = Date.now();
         // 定义一个变量，用来存储当前的索引
         let i = 0;
@@ -64,12 +67,13 @@ monitoJdSchema.statics.updatagoods = async function() {
                 // 启动一个无头浏览器
                 
                 await page.goto(url);
-                await page.waitForFunction('document.querySelector(".summary-price .price").textContent != ""');
+                await page.waitForSelector("#detail .tm-price-panel.tm-price-cur .tm-price");
+                await page.waitForFunction('document.querySelector("#detail .tm-price-panel.tm-price-cur .tm-price").textContent != ""');
                 const html = await page.content();
                 // 调用更新信息的函数
                 await updataInfo(html, el, time);
                 // 关闭浏览
-                console.log('JD更新成功');
+                console.log('TM更新成功');
                 // 索引加一，准备下一次循环
                 await new Promise(resolve => setTimeout(resolve, 10000));
             } catch (err) {
@@ -81,15 +85,12 @@ monitoJdSchema.statics.updatagoods = async function() {
         async function updataInfo(html, el, time) {
             // 获取页面中的价格
             const $ = await cheerio.load(html);
-            const price = $(
-            '.itemInfo-wrap  .summary-price-wrap .summary-price.J-summary-price .dd .p-price .price',
-            ).first().text();
-            // 获取页面中的标签
-            const label = $(
-            '.summary-price.J-summary-price .dt',
-            ).first().text();
+            // 获取第一个匹配的价格元素，并使用text()方法获取其内容
+            const price = $('#detail .tm-price-panel.tm-price-cur .tm-price').first().text();
+            // 获取第一个匹配的标签元素，并使用text()方法获取其内容
+            const label = $('#detail .tm-fcs-panel .tm-price-panel dt.tb-metatit').first().text();
             // 更新数据库中的数据，插入价格和时间，修改标签
-            await monito_JD.updateMany(
+            await monito_TM.updateMany(
             { id: el.id },
             { $push: { price, time }, $set: { label } });
             setInfluxDb(el.id);
@@ -100,7 +101,7 @@ monitoJdSchema.statics.updatagoods = async function() {
 }
 
 function setInfluxDb(id) {
-    monito_JD.findOne({ id }).exec(function (err, doc) {
+    monito_TM.findOne({ id }).exec(function (err, doc) {
     if (err) {
       // 处理错误
       console.log(err);
@@ -172,7 +173,7 @@ function setInfluxDb(id) {
 }
 
 
-const monito_JD = mongoose.model('monito_JD', monitoJdSchema)
+const monito_TM = mongoose.model('monito_TM', monitoTmSchema)
 
 
-module.exports = monito_JD
+module.exports =monito_TM

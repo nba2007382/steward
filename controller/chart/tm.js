@@ -1,4 +1,4 @@
-const monito_JD = require('../../models/monito/JD');
+const monito_TM = require('../../models/monito/TM');
 const {queryApi} = require('../../influxDb/db')
 class chart {
     async getchart(req, res, next) {
@@ -31,7 +31,7 @@ async function queryAll(userEmail) {
         { $project: {_id: "$_id" } }
       ];
     // 使用聚合管道查询集合，并返回结果数组
-    const result = await monito_JD.aggregate(pipeline);
+    const result = await monito_TM.aggregate(pipeline);
     const ids = result.map(el => el._id.toString());
     console.log(ids);
     const obj = {};
@@ -92,7 +92,7 @@ const generateArray = async (userEmail) => {
         { $project: {id: "$_id", _id:0, name: 1, data: 1, time: 1 } }
       ];
     // 使用聚合管道查询集合，并返回结果数组
-    const result = await monito_JD.aggregate(pipeline);
+    const result = await monito_TM.aggregate(pipeline);
     return result;
 };
 module.exports = new chart()

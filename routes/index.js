@@ -4,6 +4,7 @@ const user = require('./user')
 const authorizations = require('./authorizations')
 const v2 = require('./v2')
 const check = require('./check')
+const table = require('./table')
 module.exports = app => {
     app.use('/chart', chart)
     app.use('/monito', monito)
@@ -11,4 +12,5 @@ module.exports = app => {
     app.use('/authorizations', authorizations)
     app.use('/v2', v2)
     app.use('/check', check)
+    app.use('/table', table)
 };

@@ -29,14 +29,15 @@ class authorization {
                 console.log(userEmail);
                 console.log(userName);
 
-                res.status(200).send({
+                res.send({
                     access_token: addLoginToken({ name: userName, email: userEmail }),
                     refresh_token: token,
+                    status: 200,
                     message: '刷新成功'
                 })
                 return
             })
-        } catch (error) {
+        } catch (error) {s
             res.status(403).send({
                 message: '刷新失败' + error
             })

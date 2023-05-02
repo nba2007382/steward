@@ -1,11 +1,10 @@
-const monito_JD = require('../../models/monito/JD')
-const getBrowserInstance = require('../../puppeteer/index')
+const monito_TM = require('../../models/monito/TM')
 const {queryApi} = require('../../influxDb/db')
 
-class pages_JD {
+class pages_TM {
     async getgoodsInfo(req, res, next) {
         const { id } = req.query
-        const goodsInfo = await monito_JD.find({ id })
+        const goodsInfo = await monito_TM.find({ id })
         if (goodsInfo) {
             res.send({
                 status: '200',
@@ -66,4 +65,4 @@ async function getCalculation(id) {
     })
 }
 
-module.exports = new pages_JD()
+module.exports = new pages_TM()

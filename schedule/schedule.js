@@ -1,5 +1,7 @@
 const schedule = require('node-schedule');
 const monito_JD = require('../models/monito/JD')
+const monito_TM = require('../models/monito/TM')
+const { getChartImg } = require('../echarts/echarts');
 const controlEmail = require('./email')
     // 生成新的定时任务
 let interval = async(options) => {
@@ -15,33 +17,38 @@ let interval = async(options) => {
                     // 写入你自己想在定时任务触发的时候，想要执行的函数
                 monito_JD.updatagoods().then(async(res) => {
                     const JD = await monito_JD.find({})
-                    talkJD(JD)
+                    talkJD('京东',JD)
                     console.log('jd邮箱发送完成');
+                })
+                monito_TM.updatagoods().then(async(res) => {
+                    const JD = await monito_TM.find({})
+                    talkJD('天猫',JD)
+                    console.log('tm邮箱发送完成');
                 })
                 resolve(1)
 
-                function talkJD(JD) {
+                function talkJD(typeString, GoodsArr) {
                     try {
-                        console.log('talkJD开始');
-                        for (let i = 0; i < JD.length; i++) {
-                            const el = JD[i];
+                        console.log(`talk${typeString}开始`);
+                        for (let i = 0; i < GoodsArr.length; i++) {
+                            const el = GoodsArr[i];
                             if (el.price[el.price.length - 2] !== el.price[el.price.length - 1]) {
                                 const difference = el.price[el.price.length - 1] - el.price[el.price.length - 2];
-                                if (Number.isNaN(difference)) return;
-                                const subject = '您添加的京东商品价格有变动'
-                                const content = difference < 0 ? "<div>商品：" + el.title + " 今天已经降价" + Math.abs(difference) + "元<a>" + el.href + "<a/><div/>" :
-                                    "<div>商品：" + el.title + " 今天已经涨价" + Math.abs(difference) + "元<a>" + el.href + "<a/><div/>"
+                                if (Number.isNaN(difference)) continue;
+                                const subject = `您添加的${typeString}商品价格有变动`;
+                                const img = `<img src=${getChartImg(GoodsArr)}></img>`;
+                                let content = difference < 0 ? "<div>商品：" + el.title + " 今天已经降价" + Math.abs(difference) + "元<a>" + el.href + "<a/><div/>" :
+                                    "<div>商品：" + el.title + " 今天已经涨价" + Math.abs(difference) + "元<a>" + el.href + "<a/><div/>";
+                                    content = img + content;
                                 controlEmail.sendEmail({ to: el.from, content, subject })
                             }
                         }
-                        console.log('talkJD完毕');
+                        console.log(`talk${typeString}完毕`);
                         return
                     } catch (error) {
-                        console.log('talkJD识别' + error);
+                        console.log(`talk${typeString}识别` + error);
                     }
-
                 }
-
             })
             } catch (error) {
                 console.log(error);
