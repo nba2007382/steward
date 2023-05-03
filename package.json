@@ -9,6 +9,8 @@
     "@influxdata/influxdb-client": "^1.33.2",
     "async": "^3.2.4",
     "axios": "^1.4.0",
+    "bcrypt": "^5.1.0",
+    "canvas": "^2.11.2",
     "cheerio": "^1.0.0-rc.10",
     "cookie-parser": "~1.4.4",
     "dayjs": "^1.11.2",

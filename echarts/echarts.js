@@ -1,10 +1,10 @@
 const echarts = require('echarts');
-
+const { createCanvas } = require('canvas');
 
 function getChartImg(data) {
   // 创建一个 ECharts 实例
-  const chart = echarts.init(dom, null, {renderer: 'svg'});
-
+  const canvas = createCanvas(800, 600);
+  const chart = echarts.init(canvas);
   // 设置图表的配置项和数据
   const option = {
       title: {
@@ -15,7 +15,7 @@ function getChartImg(data) {
       },
       xAxis: {
           type: 'category',
-          data: data.value.time.map((el) =>
+          data: data.time.map((el) =>
               new Date(parseInt(el)).toDateString(),
           ),
       },
@@ -24,24 +24,15 @@ function getChartImg(data) {
       },
       series: [
           {
-              data: data.value.price.map(parseFloat),
+              data: data.price.map(parseFloat),
               type: 'line',
               smooth: true,
           },
       ],
   };
-
   // 设置图表的选项
   chart.setOption(option);
-
-  // 获取图表的 base64 编码的图片数据
-  const imageData = chart.getDataURL({
-    type: 'png',
-    pixelRatio: 2,
-    backgroundColor: '#fff'
-  });
-
-  return imageData;
+  return canvas.toDataURL();
 }
 
 module.exports = { getChartImg };

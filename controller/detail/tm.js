@@ -1,29 +1,37 @@
 const monito_TM = require('../../models/monito/TM')
 const {queryApi} = require('../../influxDb/db')
+const { STATUS_CODES, MESSAGES, sendResponse } = require('../../utils/utils');
 
-class pages_TM {
+
+class TM {
+    // 定义一个异步方法，用于获取商品信息
     async getgoodsInfo(req, res, next) {
+        // 从请求参数中获取id
         const { id } = req.query
+        // 调用一个单独的函数，查询商品信息
         const goodsInfo = await monito_TM.find({ id })
+        // 判断商品信息是否存在
         if (goodsInfo) {
-            res.send({
-                status: '200',
-                goodsInfo: goodsInfo[0],
-            })
+            // 如果存在，使用sendResponse函数发送状态码200和商品信息
+            sendResponse(res, STATUS_CODES.OK, { goodsInfo: goodsInfo[0] });
             return
         }
-        res.send({
-            msg: '失败'
-        })
-
+        // 如果不存在，使用sendResponse函数发送状态码404和错误信息
+        sendResponse(res, STATUS_CODES.NOT_FOUND, { message: "Failed" });
     }
+    // 定义一个异步方法，用于获取计算结果
     async getCalculation(req, res, next) {
+        // 从请求参数中获取id
         const { id } = req.query
+        // 调用一个单独的函数，获取计算结果
         const data = await getCalculation(id);
-        res.send({
-            status: 200,
-            data
-        });
+        if (data) {
+             // 使用sendResponse函数发送状态码200和数据
+            sendResponse(res, STATUS_CODES.OK, {data});
+            return;
+        }
+        // 如果不存在，使用sendResponse函数发送状态码404和错误信息
+        sendResponse(res, STATUS_CODES.NOT_FOUND, { message: "Failed" });
     }
 }
 
@@ -65,4 +73,4 @@ async function getCalculation(id) {
     })
 }
 
-module.exports = new pages_TM()
+module.exports = new TM();

@@ -4,9 +4,9 @@ const tmChart = require('../controller/chart//tm')
 const router = express.Router()
 const check = require('../middlewares/check')
 
-router.get('/jd', check.checkuser,jdChart.getchart)
-router.get('/jdCalculation', check.checkuser, jdChart.getCalculation)
-router.get('/tm', check.checkuser,tmChart.getchart)
-router.get('/tmCalculation', check.checkuser, tmChart.getCalculation)
+router.get('/jd', check.checkUser,jdChart.getChart)
+router.get('/jdCalculation', check.checkUser, jdChart.getCalculation)
+router.get('/tm', check.checkUser,tmChart.getChart)
+router.get('/tmCalculation', check.checkUser, tmChart.getCalculation)
 
 module.exports = router

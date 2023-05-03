@@ -1,47 +1,40 @@
-const { verifyRefreshLoginToken, addLoginToken } = require('../token/token')
+const { verifyToken, addLoginToken } = require('../token/token')
 const dayjs = require('dayjs')
-
-
-class authorization {
+const { STATUS_CODES,  sendResponse } = require('../utils/utils');
+const secretKey = require('../config/tokenKey')
+  // Define a class for the authorization service
+  class Authorization {
     async refreshToken(req, res, next) {
         try {
-
-            const token = req.headers.authorization.split(' ')[1]
+            const token = req.headers.authorization.split(" ")[1];
             console.log(token);
-            verifyRefreshLoginToken(token, function callback(err, payload) {
+            // 使用token对象的verifyToken方法
+            verifyToken(token, secretKey.login, function callback(err, payload) {
                 if (err) {
-                    res.status(403).send({
-                        message: '您的refreshToken验证错误'
-                    })
-                    return
+                    sendResponse(res, STATUS_CODES.FORBIDDEN, {message: "您的refreshToken验证错误"});
+                    return;
                 }
-                const { userEmail, userName, exp } = payload
-                console.log('11111111111111111111111111111111111111111');
+                const { userEmail, userName, exp } = payload;
                 console.log(payload);
-                console.log(dayjs(exp).format('YYYY-MM-DD HH:mm:ss'))
+                console.log(dayjs(exp).format("YYYY-MM-DD HH:mm:ss"));
                 if (dayjs().isAfter(exp)) {
-                    res.status(403).send({
-                        message: '您的登入过时，请重新登入'
-                    })
-                    return
+                    sendResponse(res, STATUS_CODES.FORBIDDEN, {message: "您的登入过时，请重新登入"});
+                    return;
                 }
-                console.log('================================================================');
                 console.log(userEmail);
                 console.log(userName);
-
-                res.send({
+                sendResponse(res, STATUS_CODES.OK
+                ,{
                     access_token: addLoginToken({ name: userName, email: userEmail }),
                     refresh_token: token,
-                    status: 200,
-                    message: '刷新成功'
-                })
-                return
-            })
-        } catch (error) {s
-            res.status(403).send({
-                message: '刷新失败' + error
-            })
+                    message:"刷新成功",
+                });
+                return;
+            });
+        } catch (error) {
+            // 使用模板字符串来拼接字符串
+            sendResponse(res, STATUS_CODES.INTERNAL_ERROR, {message: `刷新失败${error}`});
         }
     }
-}
-module.exports = new authorization()
+  }
+module.exports = new Authorization()

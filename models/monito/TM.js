@@ -26,6 +26,7 @@ monitoTmSchema.statics.addgoods = async function(url, id, email) {
       await page.waitForFunction('document.querySelector("#detail .tm-price-panel.tm-price-cur .tm-price").textContent != ""');
       const html = await page.content();
       page?.close?.();
+      page = null;
       const $ = cheerio.load(html);
       // 获取第一个匹配的价格元素，并使用text()方法获取其内容
       const price = $('#detail .tm-price-panel.tm-price-cur .tm-price').first().text();
@@ -45,11 +46,11 @@ monitoTmSchema.statics.addgoods = async function(url, id, email) {
     } catch (err) {
       console.log('添加失败', err);
       throw(err);
-    } finally {
-      
+    } finally  {
+      page?.close?.();
     }
 }
-monitoTmSchema.statics.updatagoods = async function() {
+monitoTmSchema.statics.updategoods = async function() {
     let page;
     try {
         // 获取数据库中的数据
@@ -79,26 +80,28 @@ monitoTmSchema.statics.updatagoods = async function() {
             } catch (err) {
                 console.log('更新失败'+el.id);
             }
-        }
-        page?.close?.();
-        // 定义一个异步函数，用来更新信息
-        async function updataInfo(html, el, time) {
-            // 获取页面中的价格
-            const $ = await cheerio.load(html);
-            // 获取第一个匹配的价格元素，并使用text()方法获取其内容
-            const price = $('#detail .tm-price-panel.tm-price-cur .tm-price').first().text();
-            // 获取第一个匹配的标签元素，并使用text()方法获取其内容
-            const label = $('#detail .tm-fcs-panel .tm-price-panel dt.tb-metatit').first().text();
-            // 更新数据库中的数据，插入价格和时间，修改标签
-            await monito_TM.updateMany(
-            { id: el.id },
-            { $push: { price, time }, $set: { label } });
-            setInfluxDb(el.id);
         };
     } catch (err) {
         console.log('商品更新失败', err);
+    } finally  {
+      page?.close?.()
     }
 }
+
+// 定义一个异步函数，用来更新信息
+async function updataInfo(html, el, time) {
+  // 获取页面中的价格
+  const $ = await cheerio.load(html);
+  // 获取第一个匹配的价格元素，并使用text()方法获取其内容
+  const price = $('#detail .tm-price-panel.tm-price-cur .tm-price').first().text();
+  // 获取第一个匹配的标签元素，并使用text()方法获取其内容
+  const label = $('#detail .tm-fcs-panel .tm-price-panel dt.tb-metatit').first().text();
+  // 更新数据库中的数据，插入价格和时间，修改标签
+  await monito_TM.updateMany(
+  { id: el.id },
+  { $push: { price, time }, $set: { label } });
+  setInfluxDb(el.id);
+};
 
 function setInfluxDb(id) {
     monito_TM.findOne({ id }).exec(function (err, doc) {
@@ -176,4 +179,4 @@ function setInfluxDb(id) {
 const monito_TM = mongoose.model('monito_TM', monitoTmSchema)
 
 
-module.exports =monito_TM
+module.exports = monito_TM;

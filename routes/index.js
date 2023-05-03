@@ -2,7 +2,7 @@ const chart = require('./chart')
 const monito = require('./monito')
 const user = require('./user')
 const authorizations = require('./authorizations')
-const v2 = require('./v2')
+const detail = require('./detail')
 const check = require('./check')
 const table = require('./table')
 module.exports = app => {
@@ -10,7 +10,7 @@ module.exports = app => {
     app.use('/monito', monito)
     app.use('/user', user)
     app.use('/authorizations', authorizations)
-    app.use('/v2', v2)
+    app.use('/detail', detail)
     app.use('/check', check)
     app.use('/table', table)
 };

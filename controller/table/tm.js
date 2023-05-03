@@ -1,15 +1,17 @@
 const monito_TM = require('../../models/monito/TM');
-const {queryApi} = require('../../influxDb/db')
-class table {
-    async geCalculationtTable(req, res, next) {
-        const { userEmail, userName } = req.body.userInfo;
-        const data = await queryAll(userEmail);
-        res.json({
-            status: '200',
-            data
-        });
-    }
+const {queryApi} = require('../../influxDb/db');
+const { STATUS_CODES, sendResponse } = require('../../utils/utils');
 
+class table {
+  // 定义一个异步方法，用于获取表格数据
+  async getTable(req, res, next) {
+      // 从请求体中获取用户邮箱和用户名
+      const { userEmail } = req.body.userInfo;
+      // 调用一个单独的函数，查询所有的数据
+      const data = await queryAll(userEmail);
+      // 使用sendResponse函数发送状态码200和数据
+      sendResponse(res, STATUS_CODES.OK, {data});
+  }
 }
 
 async function queryAll(userEmail) {

@@ -3,54 +3,37 @@ const dayjs = require('dayjs')
 const secretKey = require('../config/tokenKey')
 
 
+// 定义一个token对象，包含四个方法
 const token = {
+    // 生成登录token，包含用户名，邮箱和过期时间
     addLoginToken({ name, email }) {
-
-        return jwt.sign({
+        const payload = {
             userEmail: email,
             userName: name,
-            exp: dayjs().add(30, 'm').valueOf()
-        }, secretKey.login)
+            exp: dayjs().add(24, 'h').valueOf()
+        }
+        return jwt.sign(payload, secretKey.login)
     },
+    // 生成激活token，包含邮箱和过期时间
     addActiveToken(email) {
-        return jwt.sign({
+        const payload = {
             email,
             exp: dayjs().add(30, 'm').valueOf()
-        }, secretKey.register)
+        }
+        return jwt.sign(payload, secretKey.register)
     },
+    // 生成刷新登录token，包含用户名，邮箱和过期时间
     addRefreshLoginToken({ name, email }) {
-        return jwt.sign({
+        const payload = {
             userEmail: email,
             userName: name,
-            exp: dayjs().add(8, 'h').valueOf()
-        }, secretKey.login)
+            exp: dayjs().add(120, 'h').valueOf()
+        }
+        return jwt.sign(payload, secretKey.login)
     },
-    verifyLoginToken(token, callback) {
-        jwt.verify(token, secretKey.login, callback)
-    },
-    verifyActiveToken(res, token, account, userModel) {
-        jwt.verify(token, secretKey.register, async function(err, payload) {
-            if (err) {
-                res.render('active', { message: "您的链接有问题" })
-            }
-            const { exp, email } = payload
-            // refreshToken过期，重新登录
-            if (dayjs().isAfter(exp)) {
-                res.render('active', { message: "您的链接失效" })
-            } else if (email !== account) {
-                res.render('active', { message: "您激活的账号有问题" })
-            }
-            const data = await userModel.find({ email })
-            if (data.status == 1) {
-                res.render('active', { message: '您的账号已经激活过' })
-            }
-            await userModel.updateMany({ email }, { $set: { status: 1 } })
-            res.render('active', { message: '成功' })
-
-        })
-    },
-    verifyRefreshLoginToken(token, callback) {
-        jwt.verify(token, secretKey.login, callback)
+    // 验证token是否有效，使用回调函数处理结果
+    verifyToken(token, secretKey, callback) {
+        jwt.verify(token, secretKey, callback)
     }
 }
 
