@@ -14,6 +14,14 @@ const token = {
         }
         return jwt.sign(payload, secretKey.login)
     },
+    addAdminLoginToken({ name, email }) {
+        const payload = {
+            userEmail: email,
+            userName: name,
+            exp: dayjs().add(24, 'h').valueOf()
+        }
+        return jwt.sign(payload, secretKey.adminLogin)
+    },
     // 生成激活token，包含邮箱和过期时间
     addActiveToken(email) {
         const payload = {

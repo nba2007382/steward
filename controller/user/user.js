@@ -3,10 +3,27 @@ const { addLoginToken, verifyToken, addActiveToken, addRefreshLoginToken } = req
 const controlEmail = require('../../schedule/email')
 const { localhost } = require('../../config/lochalhost')
 const { STATUS_CODES,  sendResponse, handleDBError } = require('../../utils/utils');
+const secretKey = require('../../config/tokenKey')
+const dayjs = require('dayjs')
 
 async function sendActivationEmail(email, code) {
   const subject = "邮箱注册激活";
-  const emailContent = `<div><a>${localhost}/user/register/active?code=${code}&account=${email}</a></div>`;
+  const emailContent = `
+  <div style="background-color: #f0f0f0; padding: 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: white; border: 1px solid #cccccc;">
+      <div style="padding: 20px; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5;">
+        <h1 style="text-align: center; color: #333333;">欢迎加入我们！</h1>
+        <p style="text-align: center;">你已经成功注册了我们的网站，只差一步就可以开始使用我们的服务了。</p>
+        <p style="text-align: center;">请点击下面的链接，激活你的账号：</p>
+        <div style="text-align: center;">
+          <a target="_blank" style="display: block; padding: 10px 20px; background-color: #0099ff; color: white; text-decoration: none;">${localhost}/user/register/active?code=${code}&account=${email}</a>
+        </div>
+        <p style="text-align: center;">如果你没有注册过我们的网站，请忽略这封邮件。</p>
+        <p style="text-align: center;">感谢你对我们的支持！</p>
+      </div>
+    </div>
+  </div>
+  `;
   controlEmail.sendEmail({ to: email, content: emailContent, subject });
 }
 
@@ -95,7 +112,7 @@ class user {
                 await userModel.insertMany(userInfo);
                 // 使用token对象的addActiveToken方法
                 const code = addActiveToken(user_email);
-                await this.sendActivationEmail(user_email, code);
+                await sendActivationEmail(user_email, code);
                 sendResponse(res, STATUS_CODES.CREATED, {message: "新用户注册成功 and 激活邮箱发送成功"});
             } catch (error) {
                 handleDBError(res, error);
@@ -130,7 +147,7 @@ class user {
                 data: {
                     message: '登入成功',
                     access_token: token,
-                    userInfo: { name: user.name, email: user.email },
+                    userInfo: { name: user.name, email: user.email, role: 0 },
                 },
             };
             if (user_remember) {

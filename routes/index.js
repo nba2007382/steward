@@ -6,6 +6,7 @@ const detail = require('./detail')
 const check = require('./check')
 const table = require('./table')
 const task = require('./task')
+const admin = require('./admin')
 module.exports = app => {
     app.use('/chart', chart)
     app.use('/monito', monito)
@@ -15,4 +16,5 @@ module.exports = app => {
     app.use('/check', check)
     app.use('/table', table)
     app.use('/task', task)
+    app.use('/admin', admin)
 };

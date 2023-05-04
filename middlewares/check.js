@@ -38,6 +38,38 @@ const secretKey = require('../config/tokenKey')
             sendResponse(res, STATUS_CODES.UNAUTHORIZED, {message: `重新登陆${error}`});
         }
     }
+
+    async checkAdmin(req, res, next) {
+        try {
+            const token = req.headers.authorization.split(" ")[1];
+            if (token == "undefined") {
+                sendResponse(res, STATUS_CODES.UNAUTHORIZED, {message: "您还没有登录"});
+                return;
+            } else {
+                // 使用token对象的verifyToken方法
+                verifyToken(token, secretKey.adminLogin, function callback(err, payload) {
+                    if (err) {
+                        sendResponse(res, STATUS_CODES.UNAUTHORIZED, {message: "token无效"});
+                        return;
+                    }
+                    const { exp, userEmail, userName } = payload;
+                    console.log(payload);
+                    console.log(dayjs(exp).format("YYYY-MM-DD HH:mm:ss"));
+                    if (dayjs().isAfter(exp)) {
+                        sendResponse(res, STATUS_CODES.UNAUTHORIZED, {message: "token过期"}); // 过期，401提示客户端刷新token
+                        return;
+                    } else {
+                        // 否则通过验证
+                        req.body.userInfo = { userEmail, userName };
+                        next();
+                    }
+                });
+            }
+        } catch (error) {
+            // 使用模板字符串来拼接字符串
+            sendResponse(res, STATUS_CODES.UNAUTHORIZED, {message: `重新登陆${error}`});
+        }
+    }
     
     async checkRegister(req, res, next) {
         const { code, account } = req.params;

@@ -8,17 +8,10 @@ class chart {
   async getChart(req, res, next) {
     try {
       // 从请求体中获取用户邮箱和用户名
-      const { userEmail, userName } = req.body.userInfo;
+      const { userEmail } = req.body.userInfo;
       // 调用一个单独的函数，生成一个数组，用于存储图表数据
       const data = await generateArray(userEmail);
-      // 判断数据是否为空
-      if (data.length > 0) {
-        // 如果不为空，使用sendResponse函数发送状态码200和数据
         sendResponse(res, STATUS_CODES.OK, {data});
-      } else {
-        // 如果为空，使用sendResponse函数发送状态码404和错误信息
-        sendResponse(res, STATUS_CODES.NOT_FOUND, { message: "No data found" });
-      }
     } catch (error) {
       // 如果发生错误，使用sendResponse函数发送状态码500和错误信息
       sendResponse(res, STATUS_CODES.INTERNAL_ERROR, { message: error.message });
