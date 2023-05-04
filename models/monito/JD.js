@@ -3,6 +3,7 @@ const Schema = mongoose.Schema
 const cheerio = require('cheerio');
 const getBrowserInstance = require('../../puppeteer/index')
 const {storeStats} = require('../../influxDb/db')
+const TackManager = require('../../config/task');
 
 const monitoJdSchema = new Schema({
     id: Number,
@@ -72,9 +73,11 @@ monitoJdSchema.statics.updategoods = async function () {
     const Browser = await getBrowserInstance();
     // 创建一个新的页面
     page = await Browser.newPage();
+    const stopTask = TackManager.getJdStopTask();
     // 使用for循环和await来处理异步函数
     for (const el of data) {
       try {
+        if (stopTask[el.id] === true) continue;
         // 获取元素中的链接地址
         const url = el.href;
         // 打开指定的url

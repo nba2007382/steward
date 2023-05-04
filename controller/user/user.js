@@ -44,10 +44,28 @@ class user {
       }
     }
 
+    async del(req, res, next) {
+      try {
+        const { email } = req.body;
+        await userModel.deleteOne({ email });
+        sendResponse(res, STATUS_CODES.OK, {message: '删除成功'});
+      } catch (error) {
+        sendResponse(res, STATUS_CODES.INTERNAL_ERROR, {message: '删除失败'});
+      }
+    }
+
+    async getUsers(req, res, next) {
+      try {
+        const data = await userModel.find({}).select('-password').exec();;
+        sendResponse(res, STATUS_CODES.OK, { data });
+      } catch (error) {
+        sendResponse(res, STATUS_CODES.INTERNAL_ERROR, {message: '获取失败'});
+      }
+    }
+
     async register(req, res, next) {
         try {
             const { user_email, user_name, user_password } = req.body;
-            console.log(user_email, user_name, user_password);
             const user = await userModel.find({ email: user_email });
             console.log(user); //验证用户是否已注册
             if (user.length !==0) {

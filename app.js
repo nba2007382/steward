@@ -34,7 +34,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 router(app)
     //定时器 option{unit_name: '名字', maintain_time: '自己选择的开始时间', alarm14: '上一次定时任务的任务名称'}
     //时间格式* * * * * *
-intervalControl.interval({ unit_name: 'watchhouse', maintain_time: ' 45 * * * * *', alarm14: '' }).catch(err => { console.log(err); })
+intervalControl.interval({ unit_name: 'watchhouse', maintain_time: ' 45 1 * * * *', alarm14: '' }).catch(err => { console.log(err); })
     // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     next(createError(404));

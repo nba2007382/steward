@@ -22,6 +22,17 @@ class JD {
     }
   }
 
+  async getAll(req, res, next) {
+    try {
+      const data = await monito_JD.find({}).select('-price -label -startTime -time -from').exec();;
+        sendResponse(res, STATUS_CODES.OK, { data });
+    } catch (error) {
+      // Handle any errors
+      console.error(error);
+      sendResponse(res, STATUS_CODES.INTERNAL_ERROR, {message: error.message});
+    }
+  }
+
   // Define a method to get calculation data by id
   async getCalculation(req, res, next) {
     try {

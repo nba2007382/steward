@@ -19,6 +19,17 @@ class TM {
         // 如果不存在，使用sendResponse函数发送状态码404和错误信息
         sendResponse(res, STATUS_CODES.NOT_FOUND, { message: "Failed" });
     }
+
+    async getAll(req, res, next) {
+      try {
+        const data = await monito_TM.find({}).select('-price -label -startTime -time -from').exec();;
+          sendResponse(res, STATUS_CODES.OK, { data });
+      } catch (error) {
+        // Handle any errors
+        console.error(error);
+        sendResponse(res, STATUS_CODES.INTERNAL_ERROR, {message: error.message});
+      }
+    }
     // 定义一个异步方法，用于获取计算结果
     async getCalculation(req, res, next) {
         // 从请求参数中获取id
